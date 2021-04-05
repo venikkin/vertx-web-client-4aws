@@ -1,0 +1,51 @@
+plugins {
+    id 'java'
+}
+
+group 'com.venikkin'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+dependencies {
+    // main
+    // vertx
+    implementation platform('io.vertx:vertx-dependencies:4.0.3')
+    implementation 'io.vertx:vertx-web-client'
+    // aws
+    implementation platform('software.amazon.awssdk:bom:2.15.69')
+    implementation 'software.amazon.awssdk:auth'
+    implementation 'software.amazon.awssdk:regions'
+
+    // test
+    // vertx
+    testImplementation 'io.vertx:vertx-junit5'
+
+    // aws
+    testImplementation 'software.amazon.awssdk:cloudformation'
+
+    // junit + asserts
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.0'
+    testImplementation("org.assertj:assertj-core:3.19.0")
+    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.24.0")
+}
+
+test {
+    useJUnitPlatform()
+}
+
+task deployTestStack(type: Exec) {
+    workingDir 'test-stack'
+    commandLine './deploy-stack.sh'
+}
+
+task removeTestStack(type: Exec) {
+    workingDir 'test-stack'
+    commandLine './remove-stack.sh'
+}
+

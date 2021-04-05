@@ -1,0 +1,65 @@
+service: vertx-web-client-4aws-test
+
+frameworkVersion: ">=2.28.0"
+
+provider:
+  name: aws
+  runtime: go1.x
+  region: eu-west-1
+  memorySize: 256
+  versionFunctions: false
+  logRetentionInDays: 1
+  lambdaHashingVersion: 20201221
+  apiGateway:
+    shouldStartNameWithService: true
+    apiKeys:
+      - name: test-api-key
+        value: piper-at-the-gates-of-dawn
+
+functions:
+  echo:
+    handler: bin/api
+    events:
+      - http:
+          path: echo
+          method: get
+      - http:
+          path: secureEcho
+          method: get
+          authorizer: aws_iam
+      - http:
+          path: echo
+          method: post
+      - http:
+          path: secureEcho
+          method: post
+          authorizer: aws_iam
+      - http:
+          path: echo
+          method: put
+      - http:
+          path: secureEcho
+          method: put
+          authorizer: aws_iam
+      - http:
+          path: echo
+          method: patch
+      - http:
+          path: secureEcho
+          method: patch
+          authorizer: aws_iam
+      - http:
+          path: echo
+          method: delete
+      - http:
+          path: secureEcho
+          method: delete
+          authorizer: aws_iam
+      - http:
+          path: privateEcho
+          method: get
+          authorizer: aws_iam
+          private: true
+
+package:
+  include: bin/**
