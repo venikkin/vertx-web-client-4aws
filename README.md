@@ -3,7 +3,7 @@
 ---
 
 ## What is it?
-[Vertx](vertx) 4+ compatible web client that supports AWS [Signature Version 4](sigv4). 
+[Vertx][vertx] 4+ compatible web client that supports AWS [Signature Version 4][sigv4]. 
 
 ## What is it for ?
 Most common use case is signing HTTP requests to AWS API Gateway secured with IAM. 
@@ -35,7 +35,7 @@ Most common use case is signing HTTP requests to AWS API Gateway secured with IA
 ```
 
 ## Limitations
-Currently, it doesn't support multipart form uploads `sendMultipartForm` and streams `sendStream`. 
+Currently, it doesn't support multipart form uploads (`sendMultipartForm`) and streams (`sendStream`). 
 In that case payload is sent unsigned. Support might be added in the future. 
 
 ## How do I build it? 
