@@ -1,10 +1,12 @@
 plugins {
     id 'java'
-    id 'com.bmuschko.nexus' version '2.3.1'
+    id 'maven'
+    id 'signing'
 }
 
-group 'com.venikkin'
-version '0.1'
+group = 'com.venikkin'
+archivesBaseName = 'vertx-web-client-4aws'
+version = '0.1'
 
 repositories {
     mavenCentral()
@@ -12,50 +14,6 @@ repositories {
 
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
-
-modifyPom {
-    project {
-        name 'vertx-web-client-4aws'
-        description 'Vertx web client supporting Sigv4'
-        url 'https://github.com/venikkin/vertx-web-client-4aws'
-        inceptionYear '2021'
-
-        scm {
-            url 'https://github.com/venikkin/vertx-web-client-4aws'
-            connection 'scm:https://github.com/venikkin/vertx-web-client-4aws.git'
-            developerConnection 'scm:git://github.com/venikkin/vertx-web-client-4aws.git'
-        }
-
-        licenses {
-            license {
-                name 'The Apache Software License, Version 2.0'
-                url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                distribution 'repo'
-            }
-        }
-
-        developers {
-            developer {
-                id 'venikkin'
-                name 'Evgenii Rubanov'
-                email 'venikkin@gmail.com'
-            }
-        }
-
-    }
-}
-
-extraArchive {
-    sources = true
-    tests = false
-    javadoc = false
-}
-
-nexus {
-    sign = true
-    repositoryUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-    snapshotRepositoryUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-}
 
 dependencies {
     // main
@@ -92,5 +50,65 @@ task deployTestStack(type: Exec) {
 task removeTestStack(type: Exec) {
     workingDir 'test-stack'
     commandLine './remove-stack.sh'
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+artifacts {
+    archives sourcesJar
+}
+
+signing {
+    sign configurations.archives
+}
+
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+
+            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
+                authentication(userName: ossrhUsername, password: ossrhPassword)
+            }
+
+            pom.project {
+                name 'vertx-web-client-4aws'
+                packaging 'jar'
+                artifactId 'vertx-web-client-4aws'
+                description 'Vertx web client supporting Sigv4'
+                url 'https://github.com/venikkin/vertx-web-client-4aws'
+                inceptionYear '2021'
+
+                scm {
+                    connection 'scm:https://github.com/venikkin/vertx-web-client-4aws.git'
+                    developerConnection 'scm:git://github.com/venikkin/vertx-web-client-4aws.git'
+                    url 'https://github.com/venikkin/vertx-web-client-4aws'
+                }
+
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution 'repo'
+                    }
+                }
+
+                developers {
+                    developer {
+                        id 'venikkin'
+                        name 'Evgenii Rubanov'
+                        email 'venikkin@gmail.com'
+                    }
+                }
+            }
+        }
+    }
 }
 

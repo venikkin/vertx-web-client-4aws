@@ -6,3 +6,4 @@ test-stack/bin
 test-stack/.serverless
 pkg
 build
+gradle.properties
