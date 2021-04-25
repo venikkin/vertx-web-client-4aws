@@ -9,7 +9,7 @@
 Most common use case is signing HTTP requests to AWS API Gateway secured with IAM. 
 
 ## How do I use it?
-Include dependency in your maven.pom
+Include dependency in your pom.xml
 ```xml
 <dependency>
     <groupId>com.venikkin</groupId>
