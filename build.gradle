@@ -1,12 +1,12 @@
 plugins {
     id 'java'
-    id 'maven'
+    id 'maven-publish'
     id 'signing'
 }
 
 group = 'com.venikkin'
 archivesBaseName = 'vertx-web-client-4aws'
-version = '0.1'
+version = '0.2'
 
 repositories {
     mavenCentral()
@@ -18,10 +18,10 @@ targetCompatibility = 1.8
 dependencies {
     // main
     // vertx
-    implementation platform('io.vertx:vertx-dependencies:4.0.3')
+    implementation platform('io.vertx:vertx-dependencies:4.3.7')
     implementation 'io.vertx:vertx-web-client'
     // aws
-    implementation platform('software.amazon.awssdk:bom:2.15.69')
+    implementation platform('software.amazon.awssdk:bom:2.19.15')
     implementation 'software.amazon.awssdk:auth'
     implementation 'software.amazon.awssdk:regions'
 
@@ -32,10 +32,14 @@ dependencies {
     // aws
     testImplementation 'software.amazon.awssdk:cloudformation'
 
+    // json
+    testImplementation("com.fasterxml.jackson.core:jackson-core:2.14.1")
+    testImplementation("com.fasterxml.jackson.core:jackson-databind:2.14.1")
+
     // junit + asserts
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.7.0'
-    testImplementation("org.assertj:assertj-core:3.19.0")
-    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.24.0")
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.2'
+    testImplementation("org.assertj:assertj-core:3.24.1")
+    testImplementation("net.javacrumbs.json-unit:json-unit-assertj:2.36.0")
 }
 
 test {
@@ -53,12 +57,12 @@ task removeTestStack(type: Exec) {
 }
 
 task sourcesJar(type: Jar) {
-    classifier = 'sources'
+    archiveClassifier = 'sources'
     from sourceSets.main.allSource
 }
 
 task javadocJar(type: Jar) {
-    classifier = 'javadoc'
+    archiveClassifier = 'javadoc'
     from javadoc
 }
 
@@ -66,54 +70,60 @@ artifacts {
     archives javadocJar, sourcesJar
 }
 
-signing {
-    sign configurations.archives
-}
+publishing {
+    publications{
+        mavenJava(MavenPublication){
+            groupId = 'com.venikkin'
+            artifactId = 'vertx-web-client-4aws'
+            version = '0.2'
 
-uploadArchives {
-    repositories {
-        mavenDeployer {
-            beforeDeployment { MavenDeployment deployment -> signing.signPom(deployment) }
+            from components.java
 
-            repository(url: "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            snapshotRepository(url: "https://s01.oss.sonatype.org/content/repositories/snapshots/") {
-                authentication(userName: ossrhUsername, password: ossrhPassword)
-            }
-
-            pom.project {
-                name 'vertx-web-client-4aws'
-                packaging 'jar'
-                artifactId 'vertx-web-client-4aws'
-                description 'Vertx web client supporting Sigv4'
-                url 'https://github.com/venikkin/vertx-web-client-4aws'
-                inceptionYear '2021'
+            pom {
+                name = 'vertx-web-client-4aws'
+                packaging = 'jar'
+                artifactId = 'vertx-web-client-4aws'
+                description = 'Vertx web client supporting Sigv4'
+                url = 'https://github.com/venikkin/vertx-web-client-4aws'
+                inceptionYear = '2023'
 
                 scm {
-                    connection 'scm:https://github.com/venikkin/vertx-web-client-4aws.git'
-                    developerConnection 'scm:git://github.com/venikkin/vertx-web-client-4aws.git'
-                    url 'https://github.com/venikkin/vertx-web-client-4aws'
+                    connection = 'scm:https://github.com/venikkin/vertx-web-client-4aws.git'
+                    developerConnection = 'scm:git://github.com/venikkin/vertx-web-client-4aws.git'
+                    url = 'https://github.com/venikkin/vertx-web-client-4aws'
                 }
 
                 licenses {
                     license {
-                        name 'The Apache Software License, Version 2.0'
-                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
-                        distribution 'repo'
+                        name = 'The Apache Software License, Version 2.0'
+                        url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                        distribution = 'repo'
                     }
                 }
 
                 developers {
                     developer {
-                        id 'venikkin'
-                        name 'Evgenii Rubanov'
-                        email 'venikkin@gmail.com'
+                        id = 'venikkin'
+                        name = 'Evgenii Rubanov'
+                        email = 'venikkin@gmail.com'
                     }
                 }
             }
         }
     }
+
+    repositories {
+        maven {
+            name = "OSSRH"
+            url = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+            credentials {
+                username = project.ossrhUsername
+                password = project.ossrhPassword
+            }
+        }
+    }
 }
 
+signing {
+    sign publishing.publications.mavenJava
+}

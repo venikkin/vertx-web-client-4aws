@@ -8,6 +8,7 @@ import io.vertx.core.net.SocketAddress;
 import io.vertx.ext.web.client.HttpRequest;
 import io.vertx.ext.web.client.WebClient;
 import io.vertx.ext.web.client.WebClientOptions;
+import io.vertx.uritemplate.UriTemplate;
 
 public class AwsSigningWebClient implements WebClient {
 
@@ -43,6 +44,11 @@ public class AwsSigningWebClient implements WebClient {
     }
 
     @Override
+    public HttpRequest<Buffer> request(HttpMethod method, SocketAddress serverAddress, int port, String host, UriTemplate requestURI) {
+        return wrap(delegate.request(method, serverAddress, port, host, requestURI));
+    }
+
+    @Override
     public HttpRequest<Buffer> request(HttpMethod method, String host, String requestURI) {
         return wrap(delegate.request(method, host, requestURI));
     }
@@ -53,12 +59,22 @@ public class AwsSigningWebClient implements WebClient {
     }
 
     @Override
+    public HttpRequest<Buffer> request(HttpMethod method, SocketAddress serverAddress, String host, UriTemplate requestURI) {
+        return wrap(delegate.request(method, serverAddress, host, requestURI));
+    }
+
+    @Override
     public HttpRequest<Buffer> request(HttpMethod method, String requestURI) {
         return wrap(delegate.request(method, requestURI));
     }
 
     @Override
     public HttpRequest<Buffer> request(HttpMethod method, SocketAddress serverAddress, String requestURI) {
+        return wrap(delegate.request(method, serverAddress, requestURI));
+    }
+
+    @Override
+    public HttpRequest<Buffer> request(HttpMethod method, SocketAddress serverAddress, UriTemplate requestURI) {
         return wrap(delegate.request(method, serverAddress, requestURI));
     }
 
@@ -79,6 +95,11 @@ public class AwsSigningWebClient implements WebClient {
 
     @Override
     public HttpRequest<Buffer> requestAbs(HttpMethod method, SocketAddress serverAddress, String absoluteURI) {
+        return wrap(delegate.requestAbs(method, serverAddress, absoluteURI));
+    }
+
+    @Override
+    public HttpRequest<Buffer> requestAbs(HttpMethod method, SocketAddress serverAddress, UriTemplate absoluteURI) {
         return wrap(delegate.requestAbs(method, serverAddress, absoluteURI));
     }
 

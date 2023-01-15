@@ -7,6 +7,7 @@ import io.vertx.core.buffer.Buffer;
 import io.vertx.core.http.HttpMethod;
 import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
+import io.vertx.core.net.ProxyOptions;
 import io.vertx.core.streams.ReadStream;
 import io.vertx.ext.auth.authentication.Credentials;
 import io.vertx.ext.web.client.HttpRequest;
@@ -15,6 +16,7 @@ import io.vertx.ext.web.client.impl.HttpRequestImpl;
 import io.vertx.ext.web.client.predicate.ResponsePredicate;
 import io.vertx.ext.web.codec.BodyCodec;
 import io.vertx.ext.web.multipart.MultipartForm;
+import io.vertx.uritemplate.Variables;
 import software.amazon.awssdk.auth.signer.Aws4Signer;
 import software.amazon.awssdk.auth.signer.params.Aws4SignerParams;
 import software.amazon.awssdk.http.ContentStreamProvider;
@@ -25,6 +27,8 @@ import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
+import java.util.Map;
 
 import static io.vertx.core.http.HttpHeaders.CONTENT_TYPE;
 
@@ -53,14 +57,29 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
     }
 
     @Override
+    public HttpMethod method() {
+        return delegate.method();
+    }
+
+    @Override
     public HttpRequest<T> port(int value) {
         delegate.port(value);
         return this;
     }
 
     @Override
+    public int port() {
+        return delegate.port();
+    }
+
+    @Override
     public <U> HttpRequest<U> as(BodyCodec<U> responseCodec) {
         return new AwsSigningHttpRequest<>(delegate.as(responseCodec), signingOptions);
+    }
+
+    @Override
+    public BodyCodec<T> bodyCodec() {
+        return delegate.bodyCodec();
     }
 
     @Override
@@ -70,15 +89,30 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
     }
 
     @Override
+    public String host() {
+        return delegate.host();
+    }
+
+    @Override
     public HttpRequest<T> virtualHost(String value) {
         delegate.virtualHost(value);
         return this;
     }
 
     @Override
+    public String virtualHost() {
+        return delegate.virtualHost();
+    }
+
+    @Override
     public HttpRequest<T> uri(String value) {
         delegate.uri(value);
         return this;
+    }
+
+    @Override
+    public String uri() {
+        return delegate.uri();
     }
 
     @Override
@@ -117,9 +151,19 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
     }
 
     @Override
+    public Boolean ssl() {
+        return delegate.ssl();
+    }
+
+    @Override
     public HttpRequest<T> timeout(long value) {
         delegate.timeout(value);
         return this;
+    }
+
+    @Override
+    public long timeout() {
+        return delegate.timeout();
     }
 
     @Override
@@ -135,9 +179,39 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
     }
 
     @Override
+    public HttpRequest<T> setTemplateParam(String paramName, String paramValue) {
+        return delegate.setTemplateParam(paramName, paramValue);
+    }
+
+    @Override
+    public HttpRequest<T> setTemplateParam(String paramName, List<String> paramValue) {
+        return delegate.setTemplateParam(paramName, paramValue);
+    }
+
+    @Override
+    public HttpRequest<T> setTemplateParam(String paramName, Map<String, String> paramValue) {
+        return delegate.setTemplateParam(paramName, paramValue);
+    }
+
+    @Override
     public HttpRequest<T> followRedirects(boolean value) {
         delegate.followRedirects(value);
         return this;
+    }
+
+    @Override
+    public boolean followRedirects() {
+        return delegate.followRedirects();
+    }
+
+    @Override
+    public HttpRequest<T> proxy(ProxyOptions proxyOptions) {
+        return delegate.proxy(proxyOptions);
+    }
+
+    @Override
+    public ProxyOptions proxy() {
+        return delegate.proxy();
     }
 
     @Override
@@ -147,8 +221,18 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
     }
 
     @Override
+    public List<ResponsePredicate> expectations() {
+        return delegate.expectations();
+    }
+
+    @Override
     public MultiMap queryParams() {
         return delegate.queryParams();
+    }
+
+    @Override
+    public Variables templateParams() {
+        return delegate.templateParams();
     }
 
     @Override
@@ -160,6 +244,21 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
     public HttpRequest<T> multipartMixed(boolean allow) {
         delegate.multipartMixed(true);
         return this;
+    }
+
+    @Override
+    public boolean multipartMixed() {
+        return delegate.multipartMixed();
+    }
+
+    @Override
+    public HttpRequest<T> traceOperation(String traceOperation) {
+        return delegate.traceOperation(traceOperation);
+    }
+
+    @Override
+    public String traceOperation() {
+        return delegate.traceOperation();
     }
 
     public HttpRequest<T> protocol(final String protocol) {
@@ -200,7 +299,14 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
 
     @Override
     public void sendForm(MultiMap body, Handler<AsyncResult<HttpResponse<T>>> handler) {
-        final Buffer buffer = urlEncodeParameters(body);
+        final Buffer buffer = urlEncodeParameters(body, StandardCharsets.UTF_8.name());
+        delegate.putHeader(CONTENT_TYPE.toString(), "application/x-www-form-urlencoded");
+        sendBuffer(buffer, handler);
+    }
+
+    @Override
+    public void sendForm(MultiMap body, String charset, Handler<AsyncResult<HttpResponse<T>>> handler) {
+        final Buffer buffer = urlEncodeParameters(body, charset);
         delegate.putHeader(CONTENT_TYPE.toString(), "application/x-www-form-urlencoded");
         sendBuffer(buffer, handler);
     }
@@ -261,7 +367,7 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
         }
     }
 
-    private Buffer urlEncodeParameters(final MultiMap multiMap) {
+    private Buffer urlEncodeParameters(final MultiMap multiMap, String charset) {
         if (multiMap == null) {
             return null;
         }
@@ -270,17 +376,17 @@ public class AwsSigningHttpRequest<T> implements HttpRequest<T> {
         }
         final StringBuilder sb = new StringBuilder();
         multiMap.forEach(pair ->
-                sb.append(encode(pair.getKey()))
+                sb.append(encode(pair.getKey(), charset))
                         .append('=')
-                        .append(encode(pair.getValue()))
+                        .append(encode(pair.getValue(), charset))
                         .append('&')
         );
         return Buffer.buffer(sb.substring(0, sb.length() - 1));
     }
 
-    private static String encode(final String s) {
+    private static String encode(final String s, String charset) {
         try {
-            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
+            return URLEncoder.encode(s, charset);
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }

@@ -82,6 +82,7 @@ class AwsSigningHttpContextInterceptorTest {
         final WebClient vanillaClient = WebClient.create(vertx, new WebClientOptions()
                 .setDefaultHost(testUrl.getHost())
                 .setDefaultPort(443)
+                .setFollowRedirects(true)
                 .setSsl(true));
         final WebClient signingClient = AwsSigningWebClient.create(vanillaClient, signingOptions);
 
@@ -122,6 +123,7 @@ class AwsSigningHttpContextInterceptorTest {
             getExamples.add(example(path + " GET request by method and request options, ssl off", () ->
                     client.request(HttpMethod.GET, new RequestOptions()
                             .setHost(testUrl.getHost())
+                            .setFollowRedirects(true)
                             .setURI("/dev/" + path))));
             getExamples.add(example(path + " GET request by method and request options, ssl on", () ->
                     client.request(HttpMethod.GET, new RequestOptions()

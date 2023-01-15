@@ -1,6 +1,6 @@
 service: vertx-web-client-4aws-test
 
-frameworkVersion: ">=2.28.0"
+frameworkVersion: ">=3.26.0"
 
 provider:
   name: aws
