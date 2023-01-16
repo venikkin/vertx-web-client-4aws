@@ -14,7 +14,7 @@ Include dependency in your pom.xml
 <dependency>
     <groupId>com.venikkin</groupId>
     <artifactId>vertx-web-client-4aws</artifactId>
-    <version>0.1</version>
+    <version>0.2</version>
 </dependency>
 ```
 or build.gradle
