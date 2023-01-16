@@ -15,6 +15,11 @@ repositories {
 sourceCompatibility = 1.8
 targetCompatibility = 1.8
 
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
 dependencies {
     // main
     // vertx
@@ -54,20 +59,6 @@ task deployTestStack(type: Exec) {
 task removeTestStack(type: Exec) {
     workingDir 'test-stack'
     commandLine './remove-stack.sh'
-}
-
-task sourcesJar(type: Jar) {
-    archiveClassifier = 'sources'
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar) {
-    archiveClassifier = 'javadoc'
-    from javadoc
-}
-
-artifacts {
-    archives javadocJar, sourcesJar
 }
 
 publishing {
