@@ -19,7 +19,7 @@ Include dependency in your pom.xml
 ```
 or build.gradle
 ```groovy
-implementation 'com.venikkin:vertx-web-client-4aws:0.1'
+implementation 'com.venikkin:vertx-web-client-4aws:0.2'
 ```
 and use in your code
 ```java
