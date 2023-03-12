@@ -54,7 +54,7 @@ In that case payload is sent unsigned. Support might be added in the future.
 ## How do I build it? 
 In order to build the project without running tests, clone it and execute `./gradlew build -x test`. 
 
-Tests will require you to have an AWS account, and golang (1.16+), and serverless (2.28+) installed. 
+Tests will require you to have an AWS account, and golang (1.16+), and serverless (3.26+) installed. 
 * Set up an AWS profile called `aws-test` in `eu-west-1` region
 * Run `./gradlew deployTestStack`
 * Build the project with verification `./gradlew build`
